@@ -21,12 +21,12 @@ My simulation using 3VMs.
 
 1. Capture GTP traffic on VM1(Open5gs)
 
-_sudo tcpdump -i ens33 port 2152 -w normal_traffic.pcap_
+sudo tcpdump -i ens33 port 2152 -w normal_traffic.pcap
 
-Run normal traffic on VM2(Ueransim)
-_- ping -I uesimtun0 8.8.8.8 -c1000 or_
-_- curl --interface uesimtun0 http://google.com or_
-_- curl --interface uesimtun0 -O http://speedtest.tele2.net/10MB.zip_
+2. Run normal traffic on VM2(Ueransim)
+- ping -I uesimtun0 8.8.8.8 -c1000 or
+- curl --interface uesimtun0 http://google.com or
+- curl --interface uesimtun0 -O http://speedtest.tele2.net/10MB.zip
 
 3. Capture Attack Traffic on VM1
    sudo tcpdump -i ens33 port 2152 -w attack_flood.pcap
