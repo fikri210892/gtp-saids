@@ -19,9 +19,15 @@ My simulation using 3VMs.
    
 **Traffic Capture and Analysis**
 
-Capture GTP-U traffic for analysis and IDS training on VM2(Open5gs)
+Capture GTP-U traffic for analysis and IDS training on VM1(Open5gs)
 
 sudo tcpdump -i ens33 port 2152 -w normal_traffic.pcap
+
+Run normal traffic on VM2(Ueransim)
+- ping -I uesimtun0 8.8.8.8 -c1000
+- curl --interface uesimtun0 http://google.com
+- curl --interface uesimtun0 -O http://speedtest.tele2.net/10MB.zip
+
 
 
 
