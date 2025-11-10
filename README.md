@@ -10,6 +10,11 @@ After you configure OPEN5GS and UERANSIM, test the uesimtun port using
 - ping -I uesimtun0 8.8.8.8 -c100
 - curl --interface uesimtun0 http://google.com
 
+My simulation using 3VMs (Open5gs as a core network, ueransim as a gnodeb and ue, and attacker vm)
+I attach my AMF,SMF,UPF,GNB,UE configurations
+
+
+
 
 
 
