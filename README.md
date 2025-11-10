@@ -7,10 +7,10 @@ Go to this page to install and configure UERANSIM
 https://github.com/aligungr/UERANSIM
 
 After you configure OPEN5GS and UERANSIM, test the uesimtun port using
-- ping -I uesimtin0 8.8.8.8 -c100
+- ping -I uesimtun0 8.8.8.8 -c100
 - curl --interface uesimtun0 http://google.com
 
-  
+
 
 
 
