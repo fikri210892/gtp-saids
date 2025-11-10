@@ -10,13 +10,13 @@ After you configure OPEN5GS and UERANSIM, test the uesimtun port using
 - ping -I uesimtun0 8.8.8.8 -c100
 - curl --interface uesimtun0 http://google.com
 
+If success you can continue, but if still failed you need tou troubleshoot it first. I attach my AMF,SMF,UPF,GNB,UE configurations as a refference.
+
 My simulation using 3VMs.
 1. VM1- Open5gs as a core network
 2. VM2- Ueransim as a gnodeb and ue
 3. VM3- Attacker
    
-I attach my AMF,SMF,UPF,GNB,UE configurations
-
 **Traffic Capture and Analysis**
 Capture GTP-U traffic for analysis and IDS training on VM2(Open5gs)
 sudo tcpdump -i ens33 port 2152 -w normal_traffic.pcap
