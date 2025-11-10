@@ -21,7 +21,7 @@ My simulation using 3VMs.
 
 1. Capture GTP traffic on VM1(Open5gs)
 
-sudo tcpdump -i ens33 port 2152 -w normal_traffic.pcap
+- sudo tcpdump -i ens33 port 2152 -w normal_traffic.pcap
 
 2. Run normal traffic on VM2(Ueransim)
 - ping -I uesimtun0 8.8.8.8 -c1000 or
