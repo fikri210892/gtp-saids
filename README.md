@@ -19,7 +19,7 @@ My simulation using 3VMs.
    
 **Traffic Capture and Run Traffic**
 
-1. Capture GTP traffic on VM1(Open5gs)
+1. Capture GTP Normal traffic on VM1(Open5gs)
 
 - sudo tcpdump -i ens33 port 2152 -w normal_traffic.pcap
 
@@ -28,12 +28,21 @@ My simulation using 3VMs.
 - curl --interface uesimtun0 http://google.com or
 - curl --interface uesimtun0 -O http://speedtest.tele2.net/10MB.zip
 
-3. Capture Attack Traffic on VM1
-   sudo tcpdump -i ens33 port 2152 -w attack_flood.pcap
+========Wait Until Finished==========================================
 
-5. Run attack traffic on VM3
-   sudo python3 gtp_attack.py -a 2 -c 1000
+3. Capture GTP Attack on VM1
+- sudo tcpdump -i ens33 port 2152 -w attack_flood.pcap
 
-6. 
+5. Run attack-1 on VM3
+- sudo python3 gtp_attack.py -a 2 -c 1000
+
+
+========Wait Until Finished==========================================
+
+6. Capture GTP Attack on VM1
+- sudo tcpdump -i ens33 port 2152 -w attack_invalid_teid.pcap
+
+7. dwdwdw
+- sudo python3 gtp_attack.py -a 3
 
 
