@@ -42,7 +42,17 @@ My simulation using 3VMs.
 6. Capture GTP Attack on VM1
 - sudo tcpdump -i ens33 port 2152 -w attack_invalid_teid.pcap
 
-7. dwdwdw
+7. Run attack-2 on VM3
 - sudo python3 gtp_attack.py -a 3
+
+========Wait Until Finished==========================================
+
+8. Capture GTP Attack on VM1
+- sudo tcpdump -i ens33 port 2152 -w attack_spoofing.pcap
+
+9. Run attack-3 on VM3
+- sudo python3 gtp_attack.py -a 4 -c 1000
+
+========Wait Until Finished==========================================
 
 
