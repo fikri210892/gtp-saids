@@ -17,19 +17,23 @@ My simulation using 3VMs.
 2. VM2- Ueransim as a gnodeb and ue
 3. VM3- Attacker
    
-**Traffic Capture and Analysis**
+**Traffic Capture and Run Traffic**
 
-1. Capture GTP-U traffic for analysis and IDS training on VM1(Open5gs)
+1. Capture GTP traffic on VM1(Open5gs)
 
-sudo tcpdump -i ens33 port 2152 -w normal_traffic.pcap
+_sudo tcpdump -i ens33 port 2152 -w normal_traffic.pcap_
 
 Run normal traffic on VM2(Ueransim)
-- ping -I uesimtun0 8.8.8.8 -c1000
-- curl --interface uesimtun0 http://google.com
-- curl --interface uesimtun0 -O http://speedtest.tele2.net/10MB.zip
+_- ping -I uesimtun0 8.8.8.8 -c1000 or_
+_- curl --interface uesimtun0 http://google.com or_
+_- curl --interface uesimtun0 -O http://speedtest.tele2.net/10MB.zip_
 
-2. Capture Attack Traffic 
+3. Capture Attack Traffic on VM1
+   sudo tcpdump -i ens33 port 2152 -w attack_flood.pcap
 
+5. Run attack traffic on VM3
+   sudo python3 gtp_attack.py -a 2 -c 1000
 
+6. 
 
 
