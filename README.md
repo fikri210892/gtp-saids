@@ -55,4 +55,5 @@ My simulation using 3VMs.
 
 ========Wait Until Finished==========================================
 
-
+If you have finished, continue to part 2
+https://github.com/fikri210892/gtp-saids-2-
