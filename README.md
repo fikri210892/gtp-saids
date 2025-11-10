@@ -18,7 +18,9 @@ My simulation using 3VMs.
 3. VM3- Attacker
    
 **Traffic Capture and Analysis**
+
 Capture GTP-U traffic for analysis and IDS training on VM2(Open5gs)
+
 sudo tcpdump -i ens33 port 2152 -w normal_traffic.pcap
 
 
