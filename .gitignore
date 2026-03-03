@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Output & data
+outputs/
+*.pcap
+*.pcapng
+outputs/*.csv
+
+# Model & logs
+*.h5
+*.hdf5
+*.keras
+*.log
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# TensorFlow / Keras
+*.ckpt

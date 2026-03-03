@@ -1,0 +1,6 @@
+# This repo is for attack simulation only (capture PCAPs). Detection is in part 2.
+# Environment setup (Open5GS, UERANSIM, MongoDB, WebUI) per VM: see README and
+# https://open5gs.org/open5gs/docs/guide/01-quickstart/
+
+# VM3 (attacker) only — Python deps for scripts/gtp_attack.py
+scapy>=2.5.0
