@@ -1,0 +1,278 @@
+#!/usr/bin/env python3
+"""
+LSTM Model untuk SYN Flood Detection
+"""
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense, Dropout
+from tensorflow.keras.callbacks import EarlyStopping
+
+print("="*70)
+print("LSTM MODEL - SYN FLOOD DETECTION")
+print("="*70)
+
+# 1. Load Data
+print("\n[*] Loading features...")
+flow_df = pd.read_csv('outputs/synflood_bs1_flow_based.csv')
+window_df = pd.read_csv('outputs/synflood_bs1_time_window.csv')
+
+print(f"Flow data: {flow_df.shape}")
+print(f"Window data: {window_df.shape}")
+
+# 2. Pilih features untuk LSTM (gunakan time-window data)
+print("\n[*] Preparing time-series data...")
+
+# Features untuk model
+feature_cols = [
+    'total_packets', 'tcp_packets', 'udp_packets', 
+    'syn_packets', 'ack_packets', 'syn_ratio',
+    'unique_src_ips', 'unique_dst_ips',
+    'total_bytes', 'avg_packet_size'
+]
+
+# Handle missing values
+window_df = window_df.fillna(0)
+
+X = window_df[feature_cols].values
+y = window_df['is_attack'].values
+
+print(f"Features shape: {X.shape}")
+print(f"Labels shape: {y.shape}")
+print(f"Attack samples: {y.sum()} ({y.mean()*100:.1f}%)")
+
+# 3. Create sequences untuk LSTM
+def create_sequences(X, y, time_steps=10):
+    """
+    Convert data ke sequences untuk LSTM
+    time_steps: jumlah time windows per sequence
+    """
+    Xs, ys = [], []
+    
+    for i in range(len(X) - time_steps):
+        Xs.append(X[i:(i + time_steps)])
+        ys.append(y[i + time_steps])
+    
+    return np.array(Xs), np.array(ys)
+
+# Buat sequences
+TIME_STEPS = 10
+print(f"\n[*] Creating sequences (time_steps={TIME_STEPS})...")
+X_seq, y_seq = create_sequences(X, y, TIME_STEPS)
+
+print(f"Sequence shape: {X_seq.shape}")  # (samples, time_steps, features)
+print(f"Labels shape: {y_seq.shape}")
+
+# 4. Split data
+print("\n[*] Splitting data...")
+X_train, X_test, y_train, y_test = train_test_split(
+    X_seq, y_seq, test_size=0.2, random_state=42, stratify=y_seq
+)
+
+print(f"Train: {X_train.shape}, Test: {X_test.shape}")
+print(f"Train attacks: {y_train.sum()}/{len(y_train)}")
+print(f"Test attacks: {y_test.sum()}/{len(y_test)}")
+
+# 5. Normalisasi
+print("\n[*] Normalizing features...")
+scaler = StandardScaler()
+
+# Reshape untuk scaling
+X_train_reshaped = X_train.reshape(-1, X_train.shape[-1])
+X_test_reshaped = X_test.reshape(-1, X_test.shape[-1])
+
+# Fit dan transform
+X_train_scaled = scaler.fit_transform(X_train_reshaped)
+X_test_scaled = scaler.transform(X_test_reshaped)
+
+# Reshape kembali
+X_train_scaled = X_train_scaled.reshape(X_train.shape)
+X_test_scaled = X_test_scaled.reshape(X_test.shape)
+
+# 6. Build LSTM Model
+print("\n[*] Building LSTM model...")
+
+model = Sequential([
+    # LSTM Layer 1
+    LSTM(64, return_sequences=True, input_shape=(TIME_STEPS, len(feature_cols))),
+    Dropout(0.2),
+    
+    # LSTM Layer 2
+    LSTM(32, return_sequences=False),
+    Dropout(0.2),
+    
+    # Dense Layers
+    Dense(16, activation='relu'),
+    Dropout(0.2),
+    
+    # Output Layer
+    Dense(1, activation='sigmoid')
+])
+
+# Compile model
+model.compile(
+    optimizer='adam',
+    loss='binary_crossentropy',
+    metrics=['accuracy', 'Precision', 'Recall']
+)
+
+print(model.summary())
+
+# 7. Train Model
+print("\n[*] Training LSTM model...")
+
+# Callback untuk early stopping
+early_stop = EarlyStopping(
+    monitor='val_loss',
+    patience=10,
+    restore_best_weights=True
+)
+
+# Training
+history = model.fit(
+    X_train_scaled, y_train,
+    epochs=50,
+    batch_size=32,
+    validation_split=0.2,
+    callbacks=[early_stop],
+    verbose=1
+)
+
+# 8. Evaluate Model
+print("\n[*] Evaluating model...")
+
+# Predictions
+y_pred_proba = model.predict(X_test_scaled)
+y_pred = (y_pred_proba > 0.5).astype(int).flatten()
+
+# Metrics
+print("\n" + "="*70)
+print("CLASSIFICATION REPORT")
+print("="*70)
+
+# Check if we have both classes
+unique_classes = len(np.unique(y_test))
+if unique_classes < 2:
+    print("⚠️  WARNING: Only one class in test data!")
+    print(f"All samples are: {'Normal' if np.unique(y_test)[0] == 0 else 'Attack'}")
+    print("\nSkipping classification report...")
+    print("Model trained successfully but cannot evaluate properly.")
+    # Create dummy confusion matrix
+    if np.unique(y_test)[0] == 0:
+        cm = np.array([[len(y_test), 0], [0, 0]])
+    else:
+        cm = np.array([[0, 0], [0, len(y_test)]])
+else:
+    print(classification_report(y_test, y_pred, target_names=['Normal', 'Attack']))
+    cm = confusion_matrix(y_test, y_pred)
+
+print("\n" + "="*70)
+print("CONFUSION MATRIX")
+print("="*70)
+print(cm)
+print(f"\nTrue Negatives: {cm[0,0]}")
+print(f"False Positives: {cm[0,1]}")
+print(f"False Negatives: {cm[1,0]}")
+print(f"True Positives: {cm[1,1]}")
+
+accuracy = accuracy_score(y_test, y_pred)
+print(f"\n✅ Overall Accuracy: {accuracy*100:.2f}%")
+
+# 9. Save Model
+print("\n[*] Saving model...")
+model.save('outputs/lstm_syn_flood_model.h5')
+print("✅ Model saved: outputs/lstm_syn_flood_model.h5")
+
+# 10. Visualizations
+print("\n[*] Creating visualizations...")
+
+# Plot 1: Training History
+fig, axes = plt.subplots(2, 2, figsize=(15, 10))
+fig.suptitle('LSTM Training History', fontsize=16, fontweight='bold')
+
+# Loss
+axes[0, 0].plot(history.history['loss'], label='Train Loss')
+axes[0, 0].plot(history.history['val_loss'], label='Val Loss')
+axes[0, 0].set_xlabel('Epoch')
+axes[0, 0].set_ylabel('Loss')
+axes[0, 0].set_title('Model Loss')
+axes[0, 0].legend()
+axes[0, 0].grid(True, alpha=0.3)
+
+# Accuracy
+axes[0, 1].plot(history.history['accuracy'], label='Train Accuracy')
+axes[0, 1].plot(history.history['val_accuracy'], label='Val Accuracy')
+axes[0, 1].set_xlabel('Epoch')
+axes[0, 1].set_ylabel('Accuracy')
+axes[0, 1].set_title('Model Accuracy')
+axes[0, 1].legend()
+axes[0, 1].grid(True, alpha=0.3)
+
+# Precision
+axes[1, 0].plot(history.history.get('precision', history.history.get('precision_1', [0])), label='Train Precision')
+axes[1, 0].plot(history.history.get('val_precision', history.history.get('val_precision_1', [0])), label='Val Precision')
+axes[1, 0].set_xlabel('Epoch')
+axes[1, 0].set_ylabel('Precision')
+axes[1, 0].set_title('Model Precision')
+axes[1, 0].legend()
+axes[1, 0].grid(True, alpha=0.3)
+
+# Recall
+axes[1, 1].plot(history.history.get('recall', history.history.get('recall_1', [0])), label='Train Recall')
+axes[1, 1].plot(history.history.get('val_recall', history.history.get('val_recall_1', [0])), label='Val Recall')
+axes[1, 1].set_xlabel('Epoch')
+axes[1, 1].set_ylabel('Recall')
+axes[1, 1].set_title('Model Recall')
+axes[1, 1].legend()
+axes[1, 1].grid(True, alpha=0.3)
+
+plt.tight_layout()
+plt.savefig('outputs/lstm_training_history.png', dpi=300, bbox_inches='tight')
+print("✅ Saved: outputs/lstm_training_history.png")
+plt.close()
+
+# Plot 2: Confusion Matrix Heatmap
+import seaborn as sns
+
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+            xticklabels=['Normal', 'Attack'],
+            yticklabels=['Normal', 'Attack'])
+plt.title('Confusion Matrix - LSTM Model', fontsize=14, fontweight='bold')
+plt.ylabel('True Label')
+plt.xlabel('Predicted Label')
+plt.tight_layout()
+plt.savefig('outputs/lstm_confusion_matrix.png', dpi=300, bbox_inches='tight')
+print("✅ Saved: outputs/lstm_confusion_matrix.png")
+plt.close()
+
+# Plot 3: Predictions vs Actual
+plt.figure(figsize=(15, 5))
+plt.plot(y_test[:100], label='Actual', marker='o', linestyle='-', alpha=0.7)
+plt.plot(y_pred[:100], label='Predicted', marker='x', linestyle='--', alpha=0.7)
+plt.xlabel('Sample Index')
+plt.ylabel('Class (0=Normal, 1=Attack)')
+plt.title('LSTM Predictions vs Actual (First 100 Test Samples)', fontsize=14, fontweight='bold')
+plt.legend()
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.savefig('outputs/lstm_predictions.png', dpi=300, bbox_inches='tight')
+print("✅ Saved: outputs/lstm_predictions.png")
+plt.close()
+
+print("\n" + "="*70)
+print("LSTM TRAINING COMPLETE!")
+print("="*70)
+print("\nGenerated files:")
+print("  📊 lstm_training_history.png     - Training metrics")
+print("  🔥 lstm_confusion_matrix.png     - Confusion matrix heatmap")
+print("  📈 lstm_predictions.png          - Predictions vs actual")
+print("  🤖 lstm_syn_flood_model.h5       - Trained model")
+print("\n✅ Done!")
