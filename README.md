@@ -1,5 +1,5 @@
 
-# GTP-SAIDS
+# GTP-AEGIS
 
 Repository for **GTP attack simulation** on a 5G network (Open5GS + UERANSIM) up to capturing PCAP files. Detection/analysis methods are in a separate repo (part 2).
 
@@ -8,7 +8,7 @@ Repository for **GTP attack simulation** on a 5G network (Open5GS + UERANSIM) up
 ## Repository Structure
 
 ```
-gtp-saids/
+gtp-aegis/
 ├── config/              # Open5GS & UERANSIM reference configs
 │   ├── amf.yaml
 │   ├── smf.yaml
@@ -167,7 +167,7 @@ sudo python3 scripts/gtp_attack.py -a 4 -c 1000
 ## Part 2 (detection/analysis)
 
 For the next step (analysis and detection):  
-[https://github.com/fikri210892/gtp-saids-2](https://github.com/fikri210892/gtp-saids-2)
+[https://github.com/fikri210892/gtp-aegis-2](https://github.com/fikri210892/gtp-aegis-2)
 =======
 Welcome to my github.
 On this thread i will share my research that is Signature and Anomaly IDS on General Packet Radio Service Tunelling Protocol.
@@ -223,5 +223,5 @@ My simulation using 3VMs.
 
 
 If you have finished, continue to part 2
-https://github.com/fikri210892/gtp-saids-2
+https://github.com/fikri210892/gtp-aegis-2
 >>>>>>> fb954d05430e7f9d1b82c44e7f6a44dcf814062e
